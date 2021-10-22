@@ -13,7 +13,11 @@
     "express": "^4.17.1",
     "morgan": "^1.10.0",
     "passport": "^0.5.0",
-    "passport-azure-ad": "^4.3.1"
+    "passport-azure-ad": "^4.3.1",
+    "sequelize": "^6.7.0",
+    "tedious": "^14.0.0"
   },
-  "type": "module"
+  "devDependencies": {
+    "sequelize-cli": "^6.2.0"
+  }
 }

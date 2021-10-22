@@ -2,9 +2,15 @@
 import express from 'express';
 import morgan from 'morgan';
 import passport from 'passport';
-import config from './config.js';
+import config from './config.mjs';
 // Import the passport Azure AD library
 import { BearerStrategy } from 'passport-azure-ad';
+
+import Sequelize from 'sequelize';
+import dbConfig from "./config/database.js";
+import User from "./models/user.js"
+
+const {DataTypes} = Sequelize
 
 // Set the Azure AD B2C options
 const options = {
@@ -27,6 +33,8 @@ const bearerStrategy = new BearerStrategy(options, (token, done) => {
     }
 );
 
+const connection = new Sequelize.Sequelize(dbConfig);
+const user = User(connection, DataTypes)
 // Use the required libraries
 const app = express();
 
@@ -44,14 +52,20 @@ app.use((req, res, next) => {
 });
 
 // API anonymous endpoint
-app.get('/public', (req, res) => res.send( {'date': new Date() } ));
+app.get('/public', async (req, res) =>  res.status(200).json(await user.findAll()));
 
 // API protected endpoint
 app.get('/hello',
     passport.authenticate('oauth-bearer', {session: false}),
-    (req, res) => {
+    async (req, res) => {
         console.log('Validated claims: ', req.authInfo);
         
+        await user.create({
+            firstName: req.authInfo['given_name'],
+            lastName: req.authInfo['family_name'],
+            email: "email@email.com"
+        })
+
         // Service relies on the name claim.  
         res.status(200).json({'name': req.authInfo['name']});
     }
